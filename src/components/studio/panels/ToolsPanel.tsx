@@ -1,10 +1,10 @@
 import { useState } from "react";
 import FieldLabel from "../shared/FieldLabel";
-import { StudioTextarea, StudioSelect, StudioFileInput, StudioTextInput } from "../shared/StudioInput";
+import { StudioTextarea, StudioSelect, StudioFileInput, StudioTextInput, StudioSlider } from "../shared/StudioInput";
 import StyleContextBar from "../shared/StyleContextBar";
-import { VOCAL_LANGUAGES } from "@/types/vunox";
+import { VOCAL_LANGUAGES, STYLE_MODES } from "@/types/vunox";
 import type { StyleMode, StyleEngineOption } from "@/types/vunox";
-import { Loader2, Sparkles, FileText, Ear } from "lucide-react";
+import { Loader2, Sparkles, FileText, Ear, Settings } from "lucide-react";
 import type { ToolResult } from "@/types/vunox";
 
 interface Props {
@@ -14,6 +14,8 @@ interface Props {
   styleMode: StyleMode;
   styleInfluence: number;
   styleEngineOptions: StyleEngineOption[];
+  setStyleMode: (m: StyleMode) => void;
+  setStyleInfluence: (v: number) => void;
 }
 
 const ToolCard = ({
@@ -63,7 +65,7 @@ const ToolCard = ({
   </div>
 );
 
-const ToolsPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
+const ToolsPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions, setStyleMode, setStyleInfluence }: Props) => {
   // Create Sample
   const [csIdea, setCsIdea] = useState("");
   const [csInstrumental, setCsInstrumental] = useState(false);
@@ -101,6 +103,32 @@ const ToolsPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence
       </div>
 
       <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} />
+
+      {/* Style & Influence Settings */}
+      <div className="metal-panel metal-border rounded-lg p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Settings className="w-4 h-4 text-primary" />
+          <h3 className="font-display text-sm uppercase tracking-[0.15em] text-primary">Style Settings</h3>
+        </div>
+        <p className="text-[10px] font-body text-muted-foreground">
+          Control how style references and influence affect generation across all task panels.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <FieldLabel label="Style Mode">
+            <StudioSelect value={styleMode} onChange={(e) => setStyleMode(e.target.value as StyleMode)}>
+              {STYLE_MODES.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </StudioSelect>
+          </FieldLabel>
+          <FieldLabel label="Style Influence">
+            <div className="flex items-center gap-2">
+              <StudioSlider value={styleInfluence} onChange={setStyleInfluence} min={0} max={100} />
+              <span className="text-[10px] font-mono text-primary tabular-nums w-8 text-right">{styleInfluence}%</span>
+            </div>
+          </FieldLabel>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-5">
         {/* Create Sample */}

@@ -1,6 +1,7 @@
 import StudioHeader from "@/components/studio/StudioHeader";
 import StudioNav from "@/components/studio/StudioNav";
 import HistoryPanel from "@/components/studio/HistoryPanel";
+import GlobalPlayerBar from "@/components/studio/GlobalPlayerBar";
 import Text2MusicPanel from "@/components/studio/panels/Text2MusicPanel";
 import CoverPanel from "@/components/studio/panels/CoverPanel";
 import RepaintPanel from "@/components/studio/panels/RepaintPanel";
@@ -10,10 +11,12 @@ import CompletePanel from "@/components/studio/panels/CompletePanel";
 import ToolsPanel from "@/components/studio/panels/ToolsPanel";
 import MyStylePanel from "@/components/studio/panels/MyStylePanel";
 import { useVunoxStore } from "@/hooks/useVunoxStore";
+import { useAudioPlayer } from "@/hooks/useAudioPlayer";
 import type { SectionId } from "@/types/vunox";
 
 const Index = () => {
   const store = useVunoxStore();
+  const player = useAudioPlayer();
 
   const handleGenerate = (taskType: string) => (caption: string, params: Record<string, unknown>) => {
     store.addHistoryItem(taskType as any, caption, params);
@@ -35,7 +38,14 @@ const Index = () => {
       case "lego": return <LegoPanel {...props} />;
       case "extract": return <ExtractPanel {...props} />;
       case "complete": return <CompletePanel {...props} />;
-      case "tools": return <ToolsPanel {...props} />;
+      case "tools":
+        return (
+          <ToolsPanel
+            {...props}
+            setStyleMode={store.setStyleMode}
+            setStyleInfluence={store.setStyleInfluence}
+          />
+        );
       case "mystyle":
         return (
           <MyStylePanel
@@ -61,17 +71,12 @@ const Index = () => {
         isOnline={store.isOnline}
         styleEngine={store.styleEngine}
         setStyleEngine={store.setStyleEngine}
-        styleMode={store.styleMode}
-        setStyleMode={store.setStyleMode}
-        styleInfluence={store.styleInfluence}
-        setStyleInfluence={store.setStyleInfluence}
         styleEngineOptions={store.styleEngineOptions}
       />
 
       <div className="flex flex-1 overflow-hidden">
         <StudioNav active={store.activeSection} onChange={store.setActiveSection} />
 
-        {/* Center panel */}
         <main className="flex-1 overflow-y-auto p-6">
           {renderPanel(store.activeSection)}
         </main>
@@ -82,8 +87,11 @@ const Index = () => {
           onSelect={store.setSelectedHistoryId}
           selectedItem={store.selectedHistoryItem}
           onDelete={store.removeHistoryItem}
+          player={player}
         />
       </div>
+
+      <GlobalPlayerBar player={player} />
     </div>
   );
 };
