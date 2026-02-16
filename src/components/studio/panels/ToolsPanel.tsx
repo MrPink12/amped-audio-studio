@@ -16,6 +16,7 @@ interface Props {
   styleEngineOptions: StyleEngineOption[];
   setStyleMode: (m: StyleMode) => void;
   setStyleInfluence: (v: number) => void;
+  setStyleEngine: (e: string) => void;
 }
 
 const ToolCard = ({
@@ -65,7 +66,7 @@ const ToolCard = ({
   </div>
 );
 
-const ToolsPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions, setStyleMode, setStyleInfluence }: Props) => {
+const ToolsPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions, setStyleMode, setStyleInfluence, setStyleEngine }: Props) => {
   // Create Sample
   const [csIdea, setCsIdea] = useState("");
   const [csInstrumental, setCsInstrumental] = useState(false);
@@ -113,7 +114,14 @@ const ToolsPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence
         <p className="text-[10px] font-body text-muted-foreground">
           Control how style references and influence affect generation across all task panels.
         </p>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
+          <FieldLabel label="Engine">
+            <StudioSelect value={styleEngine} onChange={(e) => setStyleEngine(e.target.value)}>
+              {styleEngineOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </StudioSelect>
+          </FieldLabel>
           <FieldLabel label="Style Mode">
             <StudioSelect value={styleMode} onChange={(e) => setStyleMode(e.target.value as StyleMode)}>
               {STYLE_MODES.map((m) => (
