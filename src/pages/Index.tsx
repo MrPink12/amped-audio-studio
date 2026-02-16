@@ -65,7 +65,7 @@ const Index = () => {
             </div>
             <div>
               <h1 className="font-display text-xl uppercase tracking-[0.15em] text-primary gold-text-glow">
-                AmpForge
+                Vunox
               </h1>
               <p className="text-[9px] font-display uppercase tracking-[0.3em] text-muted-foreground">
                 Professional Tone Studio
@@ -228,7 +228,7 @@ const Index = () => {
         {/* Footer */}
         <footer className="text-center py-4 border-t border-border/30">
           <p className="text-[9px] font-display uppercase tracking-[0.3em] text-muted-foreground">
-            AmpForge™ Professional Tone Studio — All Tubes. All Analog. All Rock.
+            Vunox™ Professional Tone Studio — All Tubes. All Analog. All Rock.
           </p>
         </footer>
       </main>
