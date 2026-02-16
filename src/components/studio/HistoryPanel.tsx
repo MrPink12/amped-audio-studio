@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState } from "react";
 import {
   Clock, CheckCircle, AlertCircle, Loader2,
-  Play, Pause, Trash2, Download, X,
+  Play, Trash2, Download, X,
 } from "lucide-react";
 import type { HistoryItem } from "@/types/vunox";
-import { useAudioPlayer } from "@/hooks/useAudioPlayer";
+import type { AudioPlayerState } from "@/hooks/useAudioPlayer";
 import { getDownloadUrl, deleteHistoryItem } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 
@@ -14,14 +14,12 @@ interface HistoryPanelProps {
   onSelect: (id: string) => void;
   selectedItem: HistoryItem | null;
   onDelete: (id: string) => void;
+  player: AudioPlayerState & {
+    play: (id: string, url: string, label?: string) => void;
+    stop: () => void;
+    seek: (t: number) => void;
+  };
 }
-
-const fmtTime = (s: number) => {
-  if (!s || !isFinite(s)) return "0:00";
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, "0")}`;
-};
 
 const statusIcon = (status: HistoryItem["status"]) => {
   switch (status) {
@@ -36,13 +34,11 @@ const statusIcon = (status: HistoryItem["status"]) => {
   }
 };
 
-const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }: HistoryPanelProps) => {
+const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete, player }: HistoryPanelProps) => {
   const listRef = useRef<HTMLDivElement>(null);
-  const player = useAudioPlayer();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const prevLen = useRef(history.length);
 
-  // Auto-scroll when new items arrive
   useEffect(() => {
     if (history.length > prevLen.current && listRef.current) {
       listRef.current.scrollTo({ top: 0, behavior: "smooth" });
@@ -53,7 +49,6 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
   const handleDelete = async (item: HistoryItem) => {
     try {
       await deleteHistoryItem(item.id, item.fileName);
-      // Stop playback if deleting the playing item
       if (player.activeId === item.id) player.stop();
       onDelete(item.id);
       toast({ title: "Deleted", description: item.fileName ?? item.caption });
@@ -63,9 +58,14 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
     setConfirmDeleteId(null);
   };
 
+  const handlePlay = (item: HistoryItem) => {
+    if (!item.fileName) return;
+    const label = `${item.taskType.toUpperCase()} — ${item.caption}`;
+    player.play(item.id, getDownloadUrl(item.fileName), label);
+  };
+
   return (
     <aside className="w-72 shrink-0 border-l border-border metal-panel flex flex-col">
-      {/* Header */}
       <div className="px-4 py-3 border-b border-border">
         <h3 className="text-[11px] font-display uppercase tracking-[0.2em] text-primary flex items-center gap-2">
           <Clock className="w-3.5 h-3.5" />
@@ -73,53 +73,6 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
         </h3>
       </div>
 
-      {/* Now-playing mini meter */}
-      {player.activeId && (
-        <div className="px-4 py-2 border-b border-border/50 space-y-1">
-          {/* Level meter bar */}
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] font-mono text-muted-foreground w-6">LVL</span>
-            <div className="flex-1 h-2 rounded-full bg-secondary/40 overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all duration-75"
-                style={{
-                  width: `${player.level}%`,
-                  background: player.level > 80
-                    ? "hsl(var(--destructive))"
-                    : player.level > 50
-                      ? "hsl(40, 90%, 55%)"
-                      : "hsl(var(--primary))",
-                }}
-              />
-            </div>
-          </div>
-          {/* Time progress */}
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] font-mono text-muted-foreground w-6">
-              {fmtTime(player.currentTime)}
-            </span>
-            <div
-              className="flex-1 h-1 rounded-full bg-secondary/40 cursor-pointer relative"
-              onClick={(e) => {
-                if (!player.duration) return;
-                const rect = e.currentTarget.getBoundingClientRect();
-                const pct = (e.clientX - rect.left) / rect.width;
-                player.seek(pct * player.duration);
-              }}
-            >
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-100"
-                style={{ width: `${player.duration ? (player.currentTime / player.duration) * 100 : 0}%` }}
-              />
-            </div>
-            <span className="text-[9px] font-mono text-muted-foreground w-6 text-right">
-              {fmtTime(player.duration)}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* List */}
       <div className="flex-1 overflow-y-auto" ref={listRef}>
         {history.length === 0 ? (
           <div className="p-4 text-center">
@@ -127,8 +80,8 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
           </div>
         ) : (
           history.map((item) => {
-            const isPlaying = player.activeId === item.id && player.isPlaying;
             const hasFile = item.status === "success" && item.fileName;
+            const isActive = player.activeId === item.id;
             const isConfirming = confirmDeleteId === item.id;
 
             return (
@@ -136,20 +89,16 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
                 key={item.id}
                 onClick={() => onSelect(item.id)}
                 className={`w-full text-left px-3 py-2 border-b border-border/30 transition-all duration-150 cursor-pointer
-                  ${selectedId === item.id ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-secondary/20"}`}
+                  ${selectedId === item.id ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-secondary/20"}
+                  ${isActive ? "ring-1 ring-inset ring-primary/20" : ""}`}
               >
-                {/* Row 1: type + status */}
                 <div className="flex items-center justify-between mb-0.5">
                   <span className="text-[10px] font-display uppercase tracking-widest text-primary">
                     {item.taskType}
                   </span>
                   {statusIcon(item.status)}
                 </div>
-
-                {/* Caption */}
                 <p className="text-[11px] font-body text-foreground/80 truncate">{item.caption}</p>
-
-                {/* Timestamp + file */}
                 <div className="flex items-center justify-between mt-0.5">
                   <span className="text-[9px] font-mono text-muted-foreground">
                     {item.timestamp.toLocaleTimeString()}
@@ -161,33 +110,25 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
                   )}
                 </div>
 
-                {/* Action row: play, download, delete */}
                 {hasFile && (
                   <div className="flex items-center gap-1 mt-1.5">
-                    {/* Play/Pause */}
+                    {/* Play in Global Player */}
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        player.play(item.id, getDownloadUrl(item.fileName!));
-                      }}
-                      className="p-1 rounded hover:bg-primary/10 text-primary transition-colors"
-                      title={isPlaying ? "Pause" : "Play"}
+                      onClick={(e) => { e.stopPropagation(); handlePlay(item); }}
+                      className={`p-1 rounded transition-colors ${isActive && player.isPlaying ? "bg-primary/20 text-primary" : "hover:bg-primary/10 text-primary"}`}
+                      title="Play in Global Player"
                     >
-                      {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      <Play className="w-3.5 h-3.5" />
                     </button>
 
-                    {/* Per-item mini progress when this item is playing */}
-                    {player.activeId === item.id && (
-                      <div className="flex-1 h-1 rounded-full bg-secondary/30 mx-1">
-                        <div
-                          className="h-full rounded-full bg-primary/60 transition-all duration-100"
-                          style={{ width: `${player.duration ? (player.currentTime / player.duration) * 100 : 0}%` }}
-                        />
-                      </div>
+                    {/* Active indicator */}
+                    {isActive && (
+                      <span className="text-[8px] font-display uppercase tracking-widest text-primary animate-pulse">
+                        {player.isPlaying ? "Playing" : "Loaded"}
+                      </span>
                     )}
 
-                    {/* Spacer when not playing */}
-                    {player.activeId !== item.id && <div className="flex-1" />}
+                    <div className="flex-1" />
 
                     {/* Download */}
                     <a
@@ -220,10 +161,7 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
                       </div>
                     ) : (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmDeleteId(item.id);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(item.id); }}
                         className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                         title="Delete"
                       >
@@ -238,12 +176,9 @@ const HistoryPanel = ({ history, selectedId, onSelect, selectedItem, onDelete }:
         )}
       </div>
 
-      {/* Detail sub-panel */}
       {selectedItem && (
         <div className="border-t border-border p-3 max-h-48 overflow-y-auto">
-          <h4 className="text-[10px] font-display uppercase tracking-widest text-primary mb-2">
-            Details
-          </h4>
+          <h4 className="text-[10px] font-display uppercase tracking-widest text-primary mb-2">Details</h4>
           <div className="space-y-1 text-[10px] font-mono text-muted-foreground">
             <p>Engine: {selectedItem.engine}</p>
             <p>Status: {selectedItem.status}</p>

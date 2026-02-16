@@ -1,8 +1,7 @@
 import { Zap, ChevronDown } from "lucide-react";
 import LEDIndicator from "@/components/LEDIndicator";
-import { ENGINES, STYLE_MODES } from "@/types/vunox";
-import type { StyleMode, StyleEngineOption } from "@/types/vunox";
-import { StudioSlider } from "@/components/studio/shared/StudioInput";
+import { ENGINES } from "@/types/vunox";
+import type { StyleEngineOption } from "@/types/vunox";
 
 interface StudioHeaderProps {
   engine: string;
@@ -10,10 +9,6 @@ interface StudioHeaderProps {
   isOnline: boolean;
   styleEngine: string;
   setStyleEngine: (e: string) => void;
-  styleMode: StyleMode;
-  setStyleMode: (m: StyleMode) => void;
-  styleInfluence: number;
-  setStyleInfluence: (v: number) => void;
   styleEngineOptions: StyleEngineOption[];
 }
 
@@ -23,10 +18,6 @@ const StudioHeader = ({
   isOnline,
   styleEngine,
   setStyleEngine,
-  styleMode,
-  setStyleMode,
-  styleInfluence,
-  setStyleInfluence,
   styleEngineOptions,
 }: StudioHeaderProps) => (
   <header className="border-b border-border metal-panel backdrop-blur-sm">
@@ -46,9 +37,8 @@ const StudioHeader = ({
         </div>
       </div>
 
-      {/* Center: style controls */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {/* Style Engine */}
+      {/* Center: engine selector only */}
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
           <span className="text-[8px] font-display uppercase tracking-[0.2em] text-muted-foreground">Engine</span>
           <div className="relative">
@@ -65,31 +55,6 @@ const StudioHeader = ({
             </select>
             <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
           </div>
-        </div>
-
-        {/* Style Mode */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[8px] font-display uppercase tracking-[0.2em] text-muted-foreground">Style mode</span>
-          <div className="relative">
-            <select
-              value={styleMode}
-              onChange={(e) => setStyleMode(e.target.value as StyleMode)}
-              className="appearance-none bg-secondary border border-border rounded px-2 py-1 pr-6
-                text-[10px] font-display uppercase tracking-widest text-foreground
-                focus:outline-none focus:border-primary/50 cursor-pointer"
-            >
-              {STYLE_MODES.map((m) => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Style Influence */}
-        <div className="flex items-center gap-1.5 min-w-[140px]">
-          <span className="text-[8px] font-display uppercase tracking-[0.2em] text-muted-foreground whitespace-nowrap">Influence</span>
-          <StudioSlider value={styleInfluence} onChange={setStyleInfluence} min={0} max={100} />
         </div>
       </div>
 
