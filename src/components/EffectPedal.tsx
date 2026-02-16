@@ -11,7 +11,7 @@ interface EffectPedalProps {
 const EffectPedal = ({ name, active, onToggle, children, color }: EffectPedalProps) => {
   return (
     <div
-      className={`relative bg-card border border-border rounded-lg p-4 transition-all duration-300
+      className={`relative metal-panel metal-border rounded-lg p-4 transition-all duration-300 metal-surface
         ${active ? "gold-glow" : "opacity-80"}`}
     >
       {/* Top label plate */}
@@ -43,7 +43,7 @@ const EffectPedal = ({ name, active, onToggle, children, color }: EffectPedalPro
       <div className="absolute top-2 right-2">
         <div
           className={`w-2 h-2 rounded-full transition-all duration-200
-            ${active ? "bg-led-green led-glow-green" : "bg-led-green/20"}`}
+            ${active ? "bg-primary shadow-[0_0_6px_hsl(43_80%_55%/0.8)]" : "bg-primary/20"}`}
         />
       </div>
     </div>

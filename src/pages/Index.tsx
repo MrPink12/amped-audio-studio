@@ -63,9 +63,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background tolex-texture">
+    <div className="min-h-screen bg-background metal-surface">
       {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm">
+      <header className="border-b metal-border metal-panel backdrop-blur-sm">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
@@ -100,7 +100,7 @@ const Index = () => {
       <main className="container mx-auto px-4 py-6 space-y-6">
 
         {/* AI Prompt Input */}
-        <section className="bg-card border border-border rounded-xl p-5">
+        <section className="metal-panel metal-border rounded-xl p-5 metal-surface">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-4 h-4 text-primary" />
             <h2 className="font-display text-sm uppercase tracking-[0.2em] text-primary">
@@ -157,7 +157,7 @@ const Index = () => {
         </section>
 
         {/* Channel Strip */}
-        <section className="bg-card border border-border rounded-xl p-6 tolex-texture">
+        <section className="metal-panel metal-border rounded-xl p-6 metal-surface">
           <div className="flex items-center gap-2 mb-5">
             <Gauge className="w-4 h-4 text-primary" />
             <h2 className="font-display text-sm uppercase tracking-[0.2em] text-primary">
@@ -216,7 +216,7 @@ const Index = () => {
               <div className="flex-1 h-px bg-border ml-2" />
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-4 space-y-4">
+            <div className="metal-panel metal-border rounded-xl p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <VUMeter level={vuLeft} label="L" />
                 <VUMeter level={vuRight} label="R" />
@@ -245,7 +245,7 @@ const Index = () => {
             </button>
           </div>
 
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="metal-panel metal-border rounded-xl overflow-hidden">
             <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto] gap-4 px-4 py-2 border-b border-border text-[10px] font-display uppercase tracking-[0.2em] text-muted-foreground">
               <span className="w-8">#</span>
               <span>Track</span>

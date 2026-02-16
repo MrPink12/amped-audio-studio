@@ -71,19 +71,48 @@
 .tolex-texture {
   background-image: 
     repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255,255,255,0.012) 1px,
+      rgba(255,255,255,0.012) 2px
+    ),
+    repeating-linear-gradient(
       0deg,
       transparent,
-      transparent 2px,
-      rgba(0,0,0,0.15) 2px,
-      rgba(0,0,0,0.15) 4px
-    ),
+      transparent 3px,
+      rgba(255,255,255,0.008) 3px,
+      rgba(255,255,255,0.008) 4px
+    );
+}
+
+/* Brushed dark metal surface */
+.metal-surface {
+  background-image:
+    linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%, rgba(255,255,255,0.01) 100%),
     repeating-linear-gradient(
       90deg,
       transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
+      transparent 1px,
+      rgba(255,255,255,0.015) 1px,
+      rgba(255,255,255,0.015) 2px
     );
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+
+/* Heavy stamped metal panel */
+.metal-panel {
+  background: linear-gradient(180deg, hsl(0,0%,10%) 0%, hsl(0,0%,6%) 100%);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -1px 0 rgba(0,0,0,0.4),
+    0 4px 16px rgba(0,0,0,0.4);
+}
+
+/* Riveted metal edge */
+.metal-border {
+  border: 1px solid hsl(0,0%,20%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
 }
 
 .gold-glow {
