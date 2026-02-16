@@ -10,17 +10,17 @@ interface KnobProps {
 }
 
 const Knob = ({ label, value, min = 0, max = 10, onChange, size = "md" }: KnobProps) => {
-  const knobRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const startY = useRef(0);
   const startValue = useRef(value);
 
-  const sizeClasses = {
-    sm: "w-12 h-12",
-    md: "w-16 h-16",
-    lg: "w-20 h-20",
+  const sizes = {
+    sm: { outer: 48, gold: 28, ridges: 14 },
+    md: { outer: 64, gold: 36, ridges: 18 },
+    lg: { outer: 80, gold: 44, ridges: 22 },
   };
 
+  const s = sizes[size];
   const rotation = ((value - min) / (max - min)) * 270 - 135;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -44,61 +44,103 @@ const Knob = ({ label, value, min = 0, max = 10, onChange, size = "md" }: KnobPr
     window.addEventListener("mouseup", handleMouseUp);
   }, [value, min, max, onChange]);
 
-  // Generate tick marks
-  const ticks = Array.from({ length: 11 }, (_, i) => i);
+  // Number of ridges on the black skirt
+  const ridgeCount = s.ridges;
 
   return (
     <div className="flex flex-col items-center gap-2 select-none">
-      {/* Tick marks ring */}
-      <div className="relative">
-        <div className={`relative ${sizeClasses[size]}`}>
-          {/* Tick marks */}
-          {ticks.map((tick) => {
-            const tickAngle = (tick / 10) * 270 - 135;
-            const isActive = tick <= (value / max) * 10;
-            return (
-              <div
-                key={tick}
-                className="absolute top-1/2 left-1/2 origin-center"
-                style={{
-                  transform: `translate(-50%, -50%) rotate(${tickAngle}deg)`,
-                }}
-              >
-                <div
-                  className={`w-0.5 h-1.5 -mt-[calc(50%+8px)] mx-auto rounded-full transition-colors ${
-                    isActive ? "bg-primary" : "bg-muted-foreground/30"
-                  }`}
-                  style={{
-                    transform: `translateY(-${size === "lg" ? 36 : size === "md" ? 28 : 20}px)`,
-                  }}
-                />
-              </div>
-            );
-          })}
+      {/* Knob assembly */}
+      <div
+        className="relative cursor-grab active:cursor-grabbing"
+        style={{ width: s.outer, height: s.outer }}
+        onMouseDown={handleMouseDown}
+      >
+        {/* Scale dots around the knob */}
+        {Array.from({ length: 11 }, (_, i) => {
+          const dotAngle = (i / 10) * 270 - 135;
+          const rad = (dotAngle - 90) * (Math.PI / 180);
+          const radius = s.outer / 2 + 6;
+          const cx = s.outer / 2 + Math.cos(rad) * radius;
+          const cy = s.outer / 2 + Math.sin(rad) * radius;
+          const isActive = i <= (value / max) * 10;
+          return (
+            <div
+              key={i}
+              className={`absolute w-1 h-1 rounded-full transition-colors ${
+                isActive ? "bg-primary" : "bg-muted-foreground/25"
+              }`}
+              style={{ left: cx - 2, top: cy - 2 }}
+            />
+          );
+        })}
 
-          {/* Knob body */}
+        {/* Black ridged skirt */}
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `conic-gradient(${Array.from({ length: ridgeCount }, (_, i) => {
+              const start = (i / ridgeCount) * 100;
+              const mid = start + (100 / ridgeCount) * 0.4;
+              const end = start + (100 / ridgeCount);
+              return `hsl(0,0%,8%) ${start}%, hsl(0,0%,18%) ${mid}%, hsl(0,0%,6%) ${end}%`;
+            }).join(", ")})`,
+            boxShadow: `
+              0 4px 12px rgba(0,0,0,0.6),
+              0 2px 4px rgba(0,0,0,0.4),
+              inset 0 1px 0 rgba(255,255,255,0.08),
+              inset 0 -2px 4px rgba(0,0,0,0.5)
+            `,
+            transform: `rotate(${rotation}deg)`,
+            transition: isDragging ? "none" : "transform 0.1s ease-out",
+          }}
+        >
+          {/* Gold cap on top */}
           <div
-            ref={knobRef}
-            onMouseDown={handleMouseDown}
-            className={`${sizeClasses[size]} rounded-full cursor-grab active:cursor-grabbing knob-shadow
-              bg-gradient-to-b from-secondary to-background border-2 border-border
-              flex items-center justify-center transition-shadow
-              ${isDragging ? "gold-glow" : ""}`}
-            style={{ transform: `rotate(${rotation}deg)` }}
+            className="absolute rounded-full"
+            style={{
+              width: s.gold,
+              height: s.gold,
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              background: `
+                radial-gradient(
+                  ellipse at 35% 30%,
+                  hsl(45, 85%, 72%) 0%,
+                  hsl(43, 80%, 58%) 30%,
+                  hsl(40, 75%, 45%) 60%,
+                  hsl(38, 70%, 35%) 100%
+                )
+              `,
+              boxShadow: `
+                inset 0 1px 2px rgba(255,255,255,0.4),
+                inset 0 -1px 2px rgba(0,0,0,0.3),
+                0 1px 3px rgba(0,0,0,0.4)
+              `,
+            }}
           >
-            {/* Pointer line */}
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-0.5 h-3 bg-primary rounded-full" />
+            {/* Indicator notch/line on gold cap */}
+            <div
+              className="absolute left-1/2 -translate-x-1/2"
+              style={{
+                top: 3,
+                width: 2,
+                height: s.gold * 0.35,
+                background: "hsl(0,0%,10%)",
+                borderRadius: 1,
+              }}
+            />
           </div>
         </div>
       </div>
 
-      {/* Value display */}
+      {/* Value */}
       <span className="font-mono text-xs text-primary tabular-nums">
         {value.toFixed(1)}
       </span>
 
       {/* Label */}
-      <span className="text-[10px] font-display uppercase tracking-[0.2em] text-cream/60">
+      <span className="text-[10px] font-display uppercase tracking-[0.2em] text-muted-foreground">
         {label}
       </span>
     </div>
