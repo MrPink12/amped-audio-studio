@@ -116,7 +116,7 @@ const Index = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-                placeholder="Beskriv din musik... t.ex. 'Heavy blues riff i E, 120 BPM, analog distortion'"
+                placeholder="Describe your music... e.g. 'Heavy blues riff in E, 120 BPM, analog distortion'"
                 className="w-full bg-background border border-border rounded-lg px-4 py-3 pr-12 
                   font-body text-sm text-foreground placeholder:text-muted-foreground
                   focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20
@@ -136,7 +136,7 @@ const Index = () => {
                 disabled:opacity-40 disabled:cursor-not-allowed gold-glow flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
-              <span className="hidden sm:inline">Skapa</span>
+              <span className="hidden sm:inline">Create</span>
             </button>
           </div>
 
