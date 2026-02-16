@@ -21,7 +21,7 @@ const StudioHeader = ({ engine, setEngine, isOnline }: StudioHeaderProps) => (
             Vunox Studio
           </h1>
           <p className="text-[9px] font-display uppercase tracking-[0.3em] text-muted-foreground">
-            Professional AI Music Production
+            Professional AI Music Production by P. Hagström
           </p>
         </div>
       </div>
