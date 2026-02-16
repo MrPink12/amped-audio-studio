@@ -1,11 +1,13 @@
 import { useState } from "react";
 import PanelShell from "../shared/PanelShell";
 import FieldLabel from "../shared/FieldLabel";
-import { StudioTextarea, StudioNumberInput, StudioSelect } from "../shared/StudioInput";
+import { StudioTextarea } from "../shared/StudioInput";
 import StyleContextBar from "../shared/StyleContextBar";
-import { MUSICAL_KEYS, TIME_SIGNATURES, VOCAL_LANGUAGES } from "@/types/vunox";
 import type { StyleMode, StyleEngineOption } from "@/types/vunox";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import AdvancedSettingsPanel, {
+  type AdvancedSettings,
+  DEFAULT_ADVANCED,
+} from "@/components/AdvancedSettingsPanel";
 
 interface Props {
   engine: string;
@@ -19,14 +21,7 @@ interface Props {
 const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   const [caption, setCaption] = useState("");
   const [lyrics, setLyrics] = useState("");
-  const [duration, setDuration] = useState(30);
-  const [bpm, setBpm] = useState<string>("");
-  const [musicalKey, setMusicalKey] = useState("");
-  const [timeSig, setTimeSig] = useState("");
-  const [language, setLanguage] = useState("Auto");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [seed, setSeed] = useState<string>("");
-  const [useRandomSeed, setUseRandomSeed] = useState(true);
+  const [advanced, setAdvanced] = useState<AdvancedSettings>(DEFAULT_ADVANCED);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<{ title: string; message: string } | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -39,7 +34,27 @@ const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfl
       return;
     }
     setIsLoading(true);
-    onGenerate(caption, { lyrics, duration, bpm: bpm || null, musicalKey, timeSig, language, seed: useRandomSeed ? null : seed });
+    onGenerate(caption, {
+      lyrics,
+      duration: advanced.audioDuration,
+      bpm: advanced.bpm || null,
+      musicalKey: advanced.keySignature,
+      timeSig: advanced.timeSignature,
+      language: advanced.vocalLanguage,
+      seed: advanced.randomSeed ? null : advanced.seed,
+      // TODO: include remaining advanced settings in backend payload:
+      // batch_size: advanced.batchSize,
+      // dit_steps: advanced.ditSteps,
+      // shift: advanced.shift,
+      // custom_timesteps: advanced.customTimesteps,
+      // audio_format: advanced.audioFormat,
+      // inference_method: advanced.inferenceMethod,
+      // lm_temperature: advanced.lmTemperature,
+      // lm_cfg_scale: advanced.lmCfgScale,
+      // lm_top_k: advanced.lmTopK,
+      // lm_top_p: advanced.lmTopP,
+      // lm_negative_prompt: advanced.lmNegativePrompt,
+    });
     setTimeout(() => {
       setIsLoading(false);
       setSuccess("Clip generated and saved.");
@@ -59,6 +74,7 @@ const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfl
       generateDisabled={!caption.trim()}
     >
       <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} />
+
       <FieldLabel label="Caption / Prompt" required>
         <StudioTextarea
           value={caption}
@@ -77,64 +93,7 @@ const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfl
         />
       </FieldLabel>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <FieldLabel label="Duration (s)" required>
-          <StudioNumberInput value={duration} onChange={(e) => setDuration(Number(e.target.value))} min={1} max={600} />
-        </FieldLabel>
-        <FieldLabel label="BPM">
-          <StudioNumberInput value={bpm} onChange={(e) => setBpm(e.target.value)} placeholder="Auto" min={20} max={300} />
-        </FieldLabel>
-        <FieldLabel label="Key">
-          <StudioSelect value={musicalKey} onChange={(e) => setMusicalKey(e.target.value)}>
-            <option value="">Auto</option>
-            {MUSICAL_KEYS.map((k) => <option key={k} value={k}>{k}</option>)}
-          </StudioSelect>
-        </FieldLabel>
-        <FieldLabel label="Time Signature">
-          <StudioSelect value={timeSig} onChange={(e) => setTimeSig(e.target.value)}>
-            <option value="">Auto</option>
-            {TIME_SIGNATURES.map((t) => <option key={t} value={t}>{t}</option>)}
-          </StudioSelect>
-        </FieldLabel>
-      </div>
-
-      <FieldLabel label="Vocal Language">
-        <StudioSelect value={language} onChange={(e) => setLanguage(e.target.value)}>
-          {VOCAL_LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
-        </StudioSelect>
-      </FieldLabel>
-
-      {/* Advanced toggle */}
-      <button
-        onClick={() => setShowAdvanced(!showAdvanced)}
-        className="flex items-center gap-1.5 text-[10px] font-display uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-      >
-        {showAdvanced ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-        Advanced
-      </button>
-      {showAdvanced && (
-        <div className="pl-4 border-l border-border space-y-3">
-          <FieldLabel label="Seed">
-            <StudioNumberInput
-              value={seed}
-              onChange={(e) => setSeed(e.target.value)}
-              placeholder="Optional"
-              disabled={useRandomSeed}
-            />
-          </FieldLabel>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={useRandomSeed}
-              onChange={(e) => setUseRandomSeed(e.target.checked)}
-              className="w-3.5 h-3.5 rounded border-border bg-secondary accent-primary"
-            />
-            <span className="text-[10px] font-display uppercase tracking-widest text-muted-foreground">
-              Use random seed
-            </span>
-          </label>
-        </div>
-      )}
+      <AdvancedSettingsPanel settings={advanced} onChange={setAdvanced} />
     </PanelShell>
   );
 };
