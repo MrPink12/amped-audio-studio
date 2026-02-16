@@ -8,9 +8,7 @@ export default {
     container: {
       center: true,
       padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      screens: { "2xl": "1400px" },
     },
     extend: {
       fontFamily: {
@@ -55,18 +53,9 @@ export default {
         gold: {
           DEFAULT: "hsl(var(--gold))",
           dim: "hsl(var(--gold-dim))",
+          bright: "hsl(var(--gold-bright))",
         },
-        amber: {
-          glow: "hsl(var(--amber-glow))",
-        },
-        led: {
-          green: "hsl(var(--led-green))",
-          red: "hsl(var(--led-red))",
-        },
-        chrome: "hsl(var(--chrome))",
-        cream: "hsl(var(--cream))",
         panel: "hsl(var(--panel))",
-        tolex: "hsl(var(--tolex))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -92,10 +81,6 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "needle-bounce": {
-          "0%, 100%": { transform: "rotate(-30deg)" },
-          "50%": { transform: "rotate(15deg)" },
-        },
         "pulse-glow": {
           "0%, 100%": { opacity: "0.6" },
           "50%": { opacity: "1" },
@@ -104,7 +89,6 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "needle-bounce": "needle-bounce 2s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
       },
     },
