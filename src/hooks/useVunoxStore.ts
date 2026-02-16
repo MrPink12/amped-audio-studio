@@ -201,6 +201,11 @@ export function useVunoxStore() {
     );
   }, []);
 
+  const removeHistoryItem = useCallback((id: string) => {
+    setHistory((prev) => prev.filter((h) => h.id !== id));
+    if (selectedHistoryId === id) setSelectedHistoryId(null);
+  }, [selectedHistoryId]);
+
   const selectedHistoryItem = history.find((h) => h.id === selectedHistoryId) ?? null;
 
   return {
@@ -215,6 +220,7 @@ export function useVunoxStore() {
     engine,
     setEngine,
     addHistoryItem,
+    removeHistoryItem,
     // Style
     styleEngine,
     setStyleEngine,

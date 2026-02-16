@@ -81,6 +81,7 @@ const Index = () => {
           selectedId={store.selectedHistoryId}
           onSelect={store.setSelectedHistoryId}
           selectedItem={store.selectedHistoryItem}
+          onDelete={store.removeHistoryItem}
         />
       </div>
     </div>
