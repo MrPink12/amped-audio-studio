@@ -3,69 +3,101 @@ import { useEffect, useState } from "react";
 interface VUMeterProps {
   level: number; // 0-100
   label?: string;
-  peak?: boolean;
 }
 
-const VUMeter = ({ level, label = "VU", peak = false }: VUMeterProps) => {
+const VUMeter = ({ level, label = "VU" }: VUMeterProps) => {
   const [displayLevel, setDisplayLevel] = useState(0);
 
   useEffect(() => {
-    // Smooth animation
     const timer = setTimeout(() => setDisplayLevel(level), 50);
     return () => clearTimeout(timer);
   }, [level]);
 
-  const segments = 20;
-  const activeSegments = Math.round((displayLevel / 100) * segments);
+  // Needle rotation: -45deg (silence) to +45deg (max)
+  const needleAngle = -45 + (displayLevel / 100) * 90;
+
+  // Scale marks from -20 to +3
+  const scaleMarks = [
+    { label: "-20", angle: -42 },
+    { label: "-10", angle: -28 },
+    { label: "-7", angle: -18 },
+    { label: "-5", angle: -10 },
+    { label: "-3", angle: -2 },
+    { label: "0", angle: 12 },
+    { label: "+1", angle: 22 },
+    { label: "+2", angle: 32 },
+    { label: "+3", angle: 42 },
+  ];
 
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-1">
       {label && (
-        <span className="text-[10px] font-display uppercase tracking-[0.2em] text-cream/60">
+        <span className="text-[10px] font-display uppercase tracking-[0.2em] text-muted-foreground">
           {label}
         </span>
       )}
 
-      {/* Meter housing */}
-      <div className="bg-background border border-border rounded-sm p-2 w-full">
-        {/* Analog meter face */}
-        <div className="relative h-16 bg-cream/5 rounded-sm overflow-hidden border border-border/50">
-          {/* Scale markings */}
-          <div className="absolute top-1 left-2 right-2 flex justify-between">
-            <span className="text-[7px] font-mono text-muted-foreground">-20</span>
-            <span className="text-[7px] font-mono text-muted-foreground">-10</span>
-            <span className="text-[7px] font-mono text-muted-foreground">0</span>
-            <span className="text-[7px] font-mono text-destructive/70">+3</span>
-          </div>
+      {/* Meter face */}
+      <div className="relative w-full aspect-[2/1] bg-foreground/95 rounded-t-full overflow-hidden border border-border">
+        {/* Cream/white meter face */}
+        <div className="absolute inset-[3px] rounded-t-full bg-gradient-to-b from-[hsl(40,20%,90%)] to-[hsl(40,15%,82%)]" />
 
-          {/* Segment bar display */}
-          <div className="absolute bottom-2 left-2 right-2 flex gap-[2px] h-6">
-            {Array.from({ length: segments }, (_, i) => {
-              const isActive = i < activeSegments;
-              const isRed = i >= segments * 0.75;
-              const isYellow = i >= segments * 0.55 && !isRed;
-              return (
-                <div
-                  key={i}
-                  className={`flex-1 rounded-[1px] transition-all duration-75 ${
-                    isActive
-                      ? isRed
-                        ? "bg-destructive led-glow-red"
-                        : isYellow
-                        ? "bg-primary led-glow-amber"
-                        : "bg-led-green led-glow-green"
-                      : "bg-border/30"
-                  }`}
-                />
-              );
-            })}
-          </div>
-
-          {/* Peak indicator */}
-          {peak && displayLevel > 75 && (
-            <div className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-destructive led-glow-red animate-pulse-glow" />
-          )}
+        {/* VU text */}
+        <div className="absolute top-[25%] left-1/2 -translate-x-1/2 text-[9px] font-display tracking-[0.3em] text-[hsl(0,0%,20%)] uppercase">
+          VU
         </div>
+
+        {/* Scale arc marks */}
+        {scaleMarks.map((mark, i) => {
+          const rad = (mark.angle - 90) * (Math.PI / 180);
+          const r = 72;
+          const cx = 50 + Math.cos(rad) * (r - 8);
+          const cy = 95 + Math.sin(rad) * (r - 8);
+          const tx = 50 + Math.cos(rad) * (r - 18);
+          const ty = 95 + Math.sin(rad) * (r - 18);
+          const tickEnd = r - 2;
+          const tcx = 50 + Math.cos(rad) * tickEnd;
+          const tcy = 95 + Math.sin(rad) * tickEnd;
+          const isRed = i >= 5; // 0dB and above
+
+          return (
+            <div key={mark.label} className="absolute inset-0">
+              {/* Tick line */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <line
+                  x1={`${cx}`} y1={`${cy}`} x2={`${tcx}`} y2={`${tcy}`}
+                  stroke={isRed ? "hsl(0,60%,45%)" : "hsl(0,0%,25%)"}
+                  strokeWidth="0.5"
+                />
+              </svg>
+              {/* Label */}
+              <span
+                className="absolute text-[5px] font-mono"
+                style={{
+                  left: `${tx}%`,
+                  top: `${ty}%`,
+                  transform: "translate(-50%, -50%)",
+                  color: isRed ? "hsl(0,60%,45%)" : "hsl(0,0%,30%)",
+                }}
+              >
+                {mark.label}
+              </span>
+            </div>
+          );
+        })}
+
+        {/* Needle */}
+        <div
+          className="absolute bottom-0 left-1/2 h-[70%] w-[1px] origin-bottom transition-transform duration-150 ease-out"
+          style={{
+            transform: `translateX(-50%) rotate(${needleAngle}deg)`,
+          }}
+        >
+          <div className="w-[1.5px] h-full bg-gradient-to-t from-[hsl(0,0%,10%)] to-[hsl(0,0%,20%)] mx-auto" />
+        </div>
+
+        {/* Needle pivot */}
+        <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[hsl(0,0%,15%)] border border-[hsl(0,0%,30%)]" />
       </div>
 
       {/* dB readout */}
