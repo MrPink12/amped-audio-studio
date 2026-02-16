@@ -13,97 +13,221 @@ const VUMeter = ({ level, label = "VU" }: VUMeterProps) => {
     return () => clearTimeout(timer);
   }, [level]);
 
-  // Needle rotation: -45deg (silence) to +45deg (max)
-  const needleAngle = -45 + (displayLevel / 100) * 90;
-
-  // Scale marks from -20 to +3
-  const scaleMarks = [
-    { label: "-20", angle: -42 },
-    { label: "-10", angle: -28 },
-    { label: "-7", angle: -18 },
-    { label: "-5", angle: -10 },
-    { label: "-3", angle: -2 },
-    { label: "0", angle: 12 },
-    { label: "+1", angle: 22 },
-    { label: "+2", angle: 32 },
-    { label: "+3", angle: 42 },
-  ];
+  // Needle rotation: maps 0-100 to the arc range
+  // Arc goes from about -50deg (left/silence) to +40deg (right/max)
+  const needleAngle = -50 + (displayLevel / 100) * 90;
 
   return (
     <div className="flex flex-col items-center gap-1">
+      {/* Outer housing - dark metal frame */}
+      <div className="w-full bg-[hsl(0,0%,12%)] rounded-md p-[6px] border border-[hsl(0,0%,20%)] shadow-[inset_0_1px_3px_rgba(0,0,0,0.6),0_1px_0_rgba(255,255,255,0.05)]">
+        {/* Inner bezel */}
+        <div className="bg-gradient-to-b from-[hsl(0,0%,28%)] to-[hsl(0,0%,18%)] rounded-sm p-[3px]">
+          {/* Meter face */}
+          <div className="relative w-full aspect-[1.8/1] overflow-hidden rounded-sm"
+            style={{
+              background: "linear-gradient(180deg, hsl(40,35%,82%) 0%, hsl(38,30%,75%) 60%, hsl(35,25%,68%) 100%)",
+            }}
+          >
+            {/* Subtle grain texture */}
+            <div className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+              }}
+            />
+
+            {/* VU label */}
+            <div className="absolute top-[12%] left-[10%] font-display text-[hsl(0,0%,10%)] text-lg font-bold tracking-tight select-none">
+              VU
+            </div>
+
+            {/* Scale arc - SVG */}
+            <svg
+              className="absolute inset-0 w-full h-full"
+              viewBox="0 0 200 110"
+              preserveAspectRatio="xMidYMax meet"
+            >
+              {/* Main arc path - black zone (-20 to 0) */}
+              <path
+                d="M 25 100 A 85 85 0 0 1 148 100"
+                fill="none"
+                stroke="hsl(0,0%,15%)"
+                strokeWidth="1.5"
+              />
+              {/* Red zone arc (0 to +3) */}
+              <path
+                d="M 148 100 A 85 85 0 0 1 185 100"
+                fill="none"
+                stroke="hsl(0,70%,45%)"
+                strokeWidth="2"
+              />
+
+              {/* dB scale marks and labels - top row */}
+              {[
+                { db: "20", pct: 0, color: "#1a1a1a" },
+                { db: "10", pct: 15, color: "#1a1a1a" },
+                { db: "7", pct: 25, color: "#1a1a1a" },
+                { db: "5", pct: 33, color: "#1a1a1a" },
+                { db: "3", pct: 45, color: "#1a1a1a" },
+                { db: "2", pct: 53, color: "#1a1a1a" },
+                { db: "1", pct: 62, color: "#1a1a1a" },
+                { db: "0", pct: 72, color: "#1a1a1a" },
+                { db: "1", pct: 80, color: "#b33" },
+                { db: "2", pct: 88, color: "#b33" },
+                { db: "3", pct: 96, color: "#b33" },
+              ].map((mark, i) => {
+                const angle = (-50 + mark.pct * 0.9) * (Math.PI / 180);
+                const cx = 100;
+                const cy = 105;
+                const r = 85;
+                const outerX = cx + Math.cos(angle - Math.PI / 2) * r;
+                const outerY = cy + Math.sin(angle - Math.PI / 2) * r;
+                const innerX = cx + Math.cos(angle - Math.PI / 2) * (r - 8);
+                const innerY = cy + Math.sin(angle - Math.PI / 2) * (r - 8);
+                const labelX = cx + Math.cos(angle - Math.PI / 2) * (r - 18);
+                const labelY = cy + Math.sin(angle - Math.PI / 2) * (r - 18);
+
+                return (
+                  <g key={`db-${i}`}>
+                    <line
+                      x1={outerX} y1={outerY} x2={innerX} y2={innerY}
+                      stroke={mark.color}
+                      strokeWidth={i === 7 ? "1.5" : "1"}
+                    />
+                    <text
+                      x={labelX} y={labelY}
+                      fill={mark.color}
+                      fontSize="8"
+                      fontFamily="Oswald, sans-serif"
+                      fontWeight="700"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                    >
+                      {mark.db}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Small tick marks between major marks */}
+              {Array.from({ length: 20 }, (_, i) => {
+                const pct = i * 5;
+                const angle = (-50 + pct * 0.9) * (Math.PI / 180);
+                const cx = 100;
+                const cy = 105;
+                const r = 85;
+                const outerX = cx + Math.cos(angle - Math.PI / 2) * r;
+                const outerY = cy + Math.sin(angle - Math.PI / 2) * r;
+                const innerX = cx + Math.cos(angle - Math.PI / 2) * (r - 4);
+                const innerY = cy + Math.sin(angle - Math.PI / 2) * (r - 4);
+                const isRed = pct > 72;
+                return (
+                  <line
+                    key={`tick-${i}`}
+                    x1={outerX} y1={outerY} x2={innerX} y2={innerY}
+                    stroke={isRed ? "#b33" : "#333"}
+                    strokeWidth="0.5"
+                  />
+                );
+              })}
+
+              {/* Percentage scale - bottom row */}
+              <path
+                d="M 38 100 A 72 72 0 0 1 175 100"
+                fill="none"
+                stroke="hsl(0,0%,25%)"
+                strokeWidth="0.5"
+              />
+              {[
+                { val: "20", pct: 5 },
+                { val: "40", pct: 25 },
+                { val: "60", pct: 45 },
+                { val: "80", pct: 62 },
+                { val: "100", pct: 72 },
+              ].map((mark, i) => {
+                const angle = (-50 + mark.pct * 0.9) * (Math.PI / 180);
+                const cx = 100;
+                const cy = 105;
+                const r = 63;
+                const labelX = cx + Math.cos(angle - Math.PI / 2) * r;
+                const labelY = cy + Math.sin(angle - Math.PI / 2) * r;
+                return (
+                  <text
+                    key={`pct-${i}`}
+                    x={labelX} y={labelY}
+                    fill="#444"
+                    fontSize="6"
+                    fontFamily="Share Tech Mono, monospace"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                  >
+                    {mark.val}
+                  </text>
+                );
+              })}
+
+              {/* "+" symbol in red zone */}
+              <text x="178" y="94" fill="#b33" fontSize="7" fontWeight="bold" fontFamily="Oswald">+</text>
+
+              {/* Vunox logo at bottom */}
+              <text
+                x="100" y="95"
+                fill="hsl(0,0%,15%)"
+                fontSize="7"
+                fontFamily="Oswald, sans-serif"
+                fontWeight="600"
+                textAnchor="middle"
+                letterSpacing="2"
+              >
+                VUNOX
+              </text>
+            </svg>
+
+            {/* Needle */}
+            <div
+              className="absolute bottom-[5%] left-1/2 h-[75%] w-[2px] origin-bottom"
+              style={{
+                transform: `translateX(-50%) rotate(${needleAngle}deg)`,
+                transition: "transform 180ms cubic-bezier(0.4, 0, 0.2, 1)",
+              }}
+            >
+              {/* Needle body - tapers from bottom to top */}
+              <div className="relative w-full h-full">
+                <div
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 h-full"
+                  style={{
+                    width: "1.5px",
+                    background: "linear-gradient(to top, hsl(0,0%,10%), hsl(0,0%,20%))",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Needle pivot screw */}
+            <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 w-4 h-4 rounded-full"
+              style={{
+                background: "radial-gradient(circle at 40% 35%, hsl(0,0%,50%), hsl(0,0%,20%))",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.5), inset 0 0.5px 0 rgba(255,255,255,0.2)",
+              }}
+            />
+
+            {/* Warm light reflection */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: "radial-gradient(ellipse at 60% 80%, hsl(40,40%,70%,0.15), transparent 60%)",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Label */}
       {label && (
-        <span className="text-[10px] font-display uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="text-[10px] font-display uppercase tracking-[0.2em] text-muted-foreground mt-1">
           {label}
         </span>
       )}
-
-      {/* Meter face */}
-      <div className="relative w-full aspect-[2/1] bg-foreground/95 rounded-t-full overflow-hidden border border-border">
-        {/* Cream/white meter face */}
-        <div className="absolute inset-[3px] rounded-t-full bg-gradient-to-b from-[hsl(40,20%,90%)] to-[hsl(40,15%,82%)]" />
-
-        {/* VU text */}
-        <div className="absolute top-[25%] left-1/2 -translate-x-1/2 text-[9px] font-display tracking-[0.3em] text-[hsl(0,0%,20%)] uppercase">
-          VU
-        </div>
-
-        {/* Scale arc marks */}
-        {scaleMarks.map((mark, i) => {
-          const rad = (mark.angle - 90) * (Math.PI / 180);
-          const r = 72;
-          const cx = 50 + Math.cos(rad) * (r - 8);
-          const cy = 95 + Math.sin(rad) * (r - 8);
-          const tx = 50 + Math.cos(rad) * (r - 18);
-          const ty = 95 + Math.sin(rad) * (r - 18);
-          const tickEnd = r - 2;
-          const tcx = 50 + Math.cos(rad) * tickEnd;
-          const tcy = 95 + Math.sin(rad) * tickEnd;
-          const isRed = i >= 5; // 0dB and above
-
-          return (
-            <div key={mark.label} className="absolute inset-0">
-              {/* Tick line */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <line
-                  x1={`${cx}`} y1={`${cy}`} x2={`${tcx}`} y2={`${tcy}`}
-                  stroke={isRed ? "hsl(0,60%,45%)" : "hsl(0,0%,25%)"}
-                  strokeWidth="0.5"
-                />
-              </svg>
-              {/* Label */}
-              <span
-                className="absolute text-[5px] font-mono"
-                style={{
-                  left: `${tx}%`,
-                  top: `${ty}%`,
-                  transform: "translate(-50%, -50%)",
-                  color: isRed ? "hsl(0,60%,45%)" : "hsl(0,0%,30%)",
-                }}
-              >
-                {mark.label}
-              </span>
-            </div>
-          );
-        })}
-
-        {/* Needle */}
-        <div
-          className="absolute bottom-0 left-1/2 h-[70%] w-[1px] origin-bottom transition-transform duration-150 ease-out"
-          style={{
-            transform: `translateX(-50%) rotate(${needleAngle}deg)`,
-          }}
-        >
-          <div className="w-[1.5px] h-full bg-gradient-to-t from-[hsl(0,0%,10%)] to-[hsl(0,0%,20%)] mx-auto" />
-        </div>
-
-        {/* Needle pivot */}
-        <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-[hsl(0,0%,15%)] border border-[hsl(0,0%,30%)]" />
-      </div>
-
-      {/* dB readout */}
-      <div className="font-mono text-[11px] text-primary/80 tabular-nums">
-        {displayLevel > 0 ? `${(((displayLevel / 100) * 23) - 20).toFixed(1)} dB` : "-∞ dB"}
-      </div>
     </div>
   );
 };
