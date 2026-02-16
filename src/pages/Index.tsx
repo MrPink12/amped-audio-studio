@@ -44,6 +44,7 @@ const Index = () => {
             {...props}
             setStyleMode={store.setStyleMode}
             setStyleInfluence={store.setStyleInfluence}
+            setStyleEngine={store.setStyleEngine}
           />
         );
       case "mystyle":
@@ -69,9 +70,6 @@ const Index = () => {
         engine={store.engine}
         setEngine={store.setEngine}
         isOnline={store.isOnline}
-        styleEngine={store.styleEngine}
-        setStyleEngine={store.setStyleEngine}
-        styleEngineOptions={store.styleEngineOptions}
       />
 
       <div className="flex flex-1 overflow-hidden">
