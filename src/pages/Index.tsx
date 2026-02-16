@@ -156,8 +156,14 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Channel Strip */}
-        <section className="metal-panel metal-border rounded-xl p-6 metal-surface">
+        {/* Channel Strip - rack unit style */}
+        <section className="metal-panel metal-border rounded-xl p-6 metal-surface relative overflow-hidden">
+          {/* Rack screws */}
+          <div className="absolute top-3 left-3 w-2.5 h-2.5 rounded-full bg-[hsl(0,0%,25%)] border border-[hsl(0,0%,35%)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
+          <div className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-[hsl(0,0%,25%)] border border-[hsl(0,0%,35%)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
+          <div className="absolute bottom-3 left-3 w-2.5 h-2.5 rounded-full bg-[hsl(0,0%,25%)] border border-[hsl(0,0%,35%)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
+          <div className="absolute bottom-3 right-3 w-2.5 h-2.5 rounded-full bg-[hsl(0,0%,25%)] border border-[hsl(0,0%,35%)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" />
+
           <div className="flex items-center gap-2 mb-5">
             <Gauge className="w-4 h-4 text-primary" />
             <h2 className="font-display text-sm uppercase tracking-[0.2em] text-primary">
@@ -166,15 +172,28 @@ const Index = () => {
             <div className="flex-1 h-px bg-border ml-2" />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-6 justify-items-center">
-            <Knob label="Gain" value={gain} onChange={setGain} />
-            <Knob label="Bass" value={bass} onChange={setBass} />
-            <Knob label="Mid" value={mid} onChange={setMid} />
-            <Knob label="Treble" value={treble} onChange={setTreble} />
-            <Knob label="Tone" value={tone} onChange={setTone} />
-            <Knob label="Presence" value={presence} onChange={setPresence} />
-            <Knob label="Reverb" value={reverb} onChange={setReverb} />
-            <Knob label="Master" value={master} onChange={setMaster} size="lg" />
+          {/* Plugin-style layout: knobs — VU — knobs */}
+          <div className="flex items-center justify-center gap-4 flex-wrap lg:flex-nowrap">
+            {/* Left knobs */}
+            <div className="flex gap-4 items-end">
+              <Knob label="Gain" value={gain} onChange={setGain} />
+              <Knob label="Bass" value={bass} onChange={setBass} />
+              <Knob label="Mid" value={mid} onChange={setMid} />
+              <Knob label="Treble" value={treble} onChange={setTreble} />
+            </div>
+
+            {/* Center VU meter */}
+            <div className="flex-shrink-0 w-40">
+              <VUMeter level={isPlaying ? vuLeft : 0} label="Gain Reduction" />
+            </div>
+
+            {/* Right knobs */}
+            <div className="flex gap-4 items-end">
+              <Knob label="Tone" value={tone} onChange={setTone} />
+              <Knob label="Presence" value={presence} onChange={setPresence} />
+              <Knob label="Reverb" value={reverb} onChange={setReverb} />
+              <Knob label="Master" value={master} onChange={setMaster} size="lg" />
+            </div>
           </div>
         </section>
 

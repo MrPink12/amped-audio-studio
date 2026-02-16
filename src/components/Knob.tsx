@@ -15,9 +15,9 @@ const Knob = ({ label, value, min = 0, max = 10, onChange, size = "md" }: KnobPr
   const startValue = useRef(value);
 
   const sizes = {
-    sm: { outer: 48, gold: 28, ridges: 14 },
-    md: { outer: 64, gold: 36, ridges: 18 },
-    lg: { outer: 80, gold: 44, ridges: 22 },
+    sm: { outer: 40, notches: 32 },
+    md: { outer: 54, notches: 40 },
+    lg: { outer: 68, notches: 50 },
   };
 
   const s = sizes[size];
@@ -44,104 +44,114 @@ const Knob = ({ label, value, min = 0, max = 10, onChange, size = "md" }: KnobPr
     window.addEventListener("mouseup", handleMouseUp);
   }, [value, min, max, onChange]);
 
-  // Number of ridges on the black skirt
-  const ridgeCount = s.ridges;
-
   return (
-    <div className="flex flex-col items-center gap-2 select-none">
+    <div className="flex flex-col items-center gap-1.5 select-none">
+      {/* Label on top */}
+      <span className="text-[10px] font-display uppercase tracking-[0.2em] text-foreground/70">
+        {label}
+      </span>
+
       {/* Knob assembly */}
       <div
         className="relative cursor-grab active:cursor-grabbing"
-        style={{ width: s.outer, height: s.outer }}
+        style={{ width: s.outer + 16, height: s.outer + 16 }}
         onMouseDown={handleMouseDown}
       >
-        {/* Scale dots around the knob */}
-        {Array.from({ length: 11 }, (_, i) => {
-          const dotAngle = (i / 10) * 270 - 135;
-          const rad = (dotAngle - 90) * (Math.PI / 180);
-          const radius = s.outer / 2 + 6;
-          const cx = s.outer / 2 + Math.cos(rad) * radius;
-          const cy = s.outer / 2 + Math.sin(rad) * radius;
-          const isActive = i <= (value / max) * 10;
+        {/* Scale ticks around knob */}
+        {Array.from({ length: 21 }, (_, i) => {
+          const tickAngle = (i / 20) * 270 - 135;
+          const rad = (tickAngle - 90) * (Math.PI / 180);
+          const outerR = (s.outer + 16) / 2;
+          const isMajor = i % 4 === 0;
+          const innerR = outerR - (isMajor ? 5 : 3);
+          const cx = outerR;
+          const cy = outerR;
           return (
-            <div
+            <line
               key={i}
-              className={`absolute w-1 h-1 rounded-full transition-colors ${
-                isActive ? "bg-primary" : "bg-muted-foreground/25"
-              }`}
-              style={{ left: cx - 2, top: cy - 2 }}
+              x1={cx + Math.cos(rad) * innerR}
+              y1={cy + Math.sin(rad) * innerR}
+              x2={cx + Math.cos(rad) * outerR}
+              y2={cy + Math.sin(rad) * outerR}
+              stroke="hsl(0,0%,50%)"
+              strokeWidth={isMajor ? "1" : "0.5"}
+              style={{ position: "absolute" }}
             />
           );
         })}
+        <svg
+          className="absolute inset-0"
+          width={s.outer + 16}
+          height={s.outer + 16}
+          viewBox={`0 0 ${s.outer + 16} ${s.outer + 16}`}
+        >
+          {Array.from({ length: 21 }, (_, i) => {
+            const tickAngle = (i / 20) * 270 - 135;
+            const rad = (tickAngle - 90) * (Math.PI / 180);
+            const outerR = (s.outer + 16) / 2 - 1;
+            const isMajor = i % 4 === 0;
+            const innerR = outerR - (isMajor ? 5 : 3);
+            const cx = (s.outer + 16) / 2;
+            const cy = (s.outer + 16) / 2;
+            return (
+              <line
+                key={i}
+                x1={cx + Math.cos(rad) * innerR}
+                y1={cy + Math.sin(rad) * innerR}
+                x2={cx + Math.cos(rad) * outerR}
+                y2={cy + Math.sin(rad) * outerR}
+                stroke="hsl(0,0%,45%)"
+                strokeWidth={isMajor ? "1" : "0.5"}
+              />
+            );
+          })}
+        </svg>
 
-        {/* Black ridged skirt */}
+        {/* Knob body - chrome/silver with brushed metal look */}
         <div
-          className="absolute inset-0 rounded-full"
+          className="absolute rounded-full"
           style={{
-            background: `conic-gradient(${Array.from({ length: ridgeCount }, (_, i) => {
-              const start = (i / ridgeCount) * 100;
-              const mid = start + (100 / ridgeCount) * 0.4;
-              const end = start + (100 / ridgeCount);
-              return `hsl(0,0%,8%) ${start}%, hsl(0,0%,18%) ${mid}%, hsl(0,0%,6%) ${end}%`;
-            }).join(", ")})`,
+            width: s.outer,
+            height: s.outer,
+            top: 8,
+            left: 8,
+            background: `
+              radial-gradient(
+                ellipse at 40% 30%,
+                hsl(0,0%,60%) 0%,
+                hsl(0,0%,42%) 30%,
+                hsl(0,0%,30%) 60%,
+                hsl(0,0%,22%) 100%
+              )
+            `,
             boxShadow: `
-              0 4px 12px rgba(0,0,0,0.6),
-              0 2px 4px rgba(0,0,0,0.4),
-              inset 0 1px 0 rgba(255,255,255,0.08),
-              inset 0 -2px 4px rgba(0,0,0,0.5)
+              0 3px 10px rgba(0,0,0,0.5),
+              0 1px 3px rgba(0,0,0,0.4),
+              inset 0 1px 1px rgba(255,255,255,0.25),
+              inset 0 -1px 2px rgba(0,0,0,0.4)
             `,
             transform: `rotate(${rotation}deg)`,
             transition: isDragging ? "none" : "transform 0.1s ease-out",
           }}
         >
-          {/* Gold cap on top */}
+          {/* Pointer line */}
           <div
-            className="absolute rounded-full"
+            className="absolute left-1/2 -translate-x-1/2"
             style={{
-              width: s.gold,
-              height: s.gold,
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              background: `
-                radial-gradient(
-                  ellipse at 35% 30%,
-                  hsl(45, 85%, 72%) 0%,
-                  hsl(43, 80%, 58%) 30%,
-                  hsl(40, 75%, 45%) 60%,
-                  hsl(38, 70%, 35%) 100%
-                )
-              `,
-              boxShadow: `
-                inset 0 1px 2px rgba(255,255,255,0.4),
-                inset 0 -1px 2px rgba(0,0,0,0.3),
-                0 1px 3px rgba(0,0,0,0.4)
-              `,
+              top: 4,
+              width: 2,
+              height: s.outer * 0.3,
+              background: "hsl(0,0%,90%)",
+              borderRadius: 1,
+              boxShadow: "0 0 3px rgba(255,255,255,0.3)",
             }}
-          >
-            {/* Indicator notch/line on gold cap */}
-            <div
-              className="absolute left-1/2 -translate-x-1/2"
-              style={{
-                top: 3,
-                width: 2,
-                height: s.gold * 0.35,
-                background: "hsl(0,0%,10%)",
-                borderRadius: 1,
-              }}
-            />
-          </div>
+          />
         </div>
       </div>
 
-      {/* Value */}
-      <span className="font-mono text-xs text-primary tabular-nums">
+      {/* Value readout */}
+      <span className="font-mono text-[11px] text-primary tabular-nums">
         {value.toFixed(1)}
-      </span>
-
-      {/* Label */}
-      <span className="text-[10px] font-display uppercase tracking-[0.2em] text-muted-foreground">
-        {label}
       </span>
     </div>
   );
