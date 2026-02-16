@@ -67,8 +67,6 @@ const Index = () => {
   return (
     <div className="h-screen flex flex-col bg-background metal-surface">
       <StudioHeader
-        engine={store.engine}
-        setEngine={store.setEngine}
         isOnline={store.isOnline}
       />
 
