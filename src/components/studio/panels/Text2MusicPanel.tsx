@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PanelShell from "../shared/PanelShell";
 import FieldLabel from "../shared/FieldLabel";
-import { StudioTextarea } from "../shared/StudioInput";
+import { StudioTextarea, StudioSlider } from "../shared/StudioInput";
 import StyleContextBar from "../shared/StyleContextBar";
 import type { StyleMode, StyleEngineOption } from "@/types/vunox";
 import AdvancedSettingsPanel, {
@@ -21,6 +21,7 @@ interface Props {
 const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   const [caption, setCaption] = useState("");
   const [lyrics, setLyrics] = useState("");
+  const [strength, setStrength] = useState(0.5);
   const [advanced, setAdvanced] = useState<AdvancedSettings>(DEFAULT_ADVANCED);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<{ title: string; message: string } | null>(null);
@@ -36,24 +37,14 @@ const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfl
     setIsLoading(true);
     onGenerate(caption, {
       lyrics,
+      strength,
       duration: advanced.audioDuration,
       bpm: advanced.bpm || null,
       musicalKey: advanced.keySignature,
       timeSig: advanced.timeSignature,
       language: advanced.vocalLanguage,
       seed: advanced.randomSeed ? null : advanced.seed,
-      // TODO: include remaining advanced settings in backend payload:
-      // batch_size: advanced.batchSize,
-      // dit_steps: advanced.ditSteps,
-      // shift: advanced.shift,
-      // custom_timesteps: advanced.customTimesteps,
-      // audio_format: advanced.audioFormat,
-      // inference_method: advanced.inferenceMethod,
-      // lm_temperature: advanced.lmTemperature,
-      // lm_cfg_scale: advanced.lmCfgScale,
-      // lm_top_k: advanced.lmTopK,
-      // lm_top_p: advanced.lmTopP,
-      // lm_negative_prompt: advanced.lmNegativePrompt,
+      // TODO: wire remaining advanced settings
     });
     setTimeout(() => {
       setIsLoading(false);
@@ -91,6 +82,10 @@ const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfl
           placeholder="Optional lyrics..."
           rows={3}
         />
+      </FieldLabel>
+
+      <FieldLabel label="Strength">
+        <StudioSlider value={strength} onChange={setStrength} min={0} max={1} step={0.01} />
       </FieldLabel>
 
       <AdvancedSettingsPanel settings={advanced} onChange={setAdvanced} />
