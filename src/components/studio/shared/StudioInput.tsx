@@ -1,3 +1,4 @@
+import React from "react";
 import { cn } from "@/lib/utils";
 
 const baseClass =
@@ -47,18 +48,41 @@ export const StudioSelect = ({
 
 export const StudioFileInput = ({
   className,
+  onChange,
   ...props
-}: React.InputHTMLAttributes<HTMLInputElement>) => (
-  <input
-    type="file"
-    accept="audio/*"
-    className={cn(
-      "w-full text-sm font-body text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-border file:bg-secondary file:text-foreground file:font-display file:text-[10px] file:uppercase file:tracking-widest file:cursor-pointer hover:file:bg-secondary/80 transition-all",
-      className
-    )}
-    {...props}
-  />
-);
+}: React.InputHTMLAttributes<HTMLInputElement>) => {
+  const [fileName, setFileName] = React.useState<string | null>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileName(e.target.files?.[0]?.name ?? null);
+    onChange?.(e);
+  };
+
+  return (
+    <div className={cn("flex items-center gap-3", className)}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="audio/*"
+        className="hidden"
+        onChange={handleChange}
+        {...props}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="shrink-0 py-1.5 px-3 rounded border border-border bg-secondary text-foreground
+          font-display text-[10px] uppercase tracking-widest cursor-pointer hover:bg-secondary/80 transition-all"
+      >
+        Choose File
+      </button>
+      <span className="text-sm font-body text-muted-foreground truncate">
+        {fileName ?? "No file chosen"}
+      </span>
+    </div>
+  );
+};
 
 export const StudioSlider = ({
   label,
