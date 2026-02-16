@@ -2,14 +2,20 @@ import { useState } from "react";
 import PanelShell from "../shared/PanelShell";
 import FieldLabel from "../shared/FieldLabel";
 import { StudioTextarea, StudioNumberInput, StudioSelect, StudioFileInput } from "../shared/StudioInput";
+import StyleContextBar from "../shared/StyleContextBar";
 import { INSTRUMENTS } from "@/types/vunox";
+import type { StyleMode, StyleEngineOption } from "@/types/vunox";
 
 interface Props {
   engine: string;
   onGenerate: (caption: string, params: Record<string, unknown>) => void;
+  styleEngine: string;
+  styleMode: StyleMode;
+  styleInfluence: number;
+  styleEngineOptions: StyleEngineOption[];
 }
 
-const LegoPanel = ({ engine, onGenerate }: Props) => {
+const LegoPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   const [file, setFile] = useState<File | null>(null);
   const [instrument, setInstrument] = useState<string>(INSTRUMENTS[0]);
   const [caption, setCaption] = useState("");
@@ -28,6 +34,7 @@ const LegoPanel = ({ engine, onGenerate }: Props) => {
 
   return (
     <PanelShell title="Lego" description="Generate a specific instrument track in the context of a backing track." engine={engine} isLoading={isLoading} error={error} success={success} onGenerate={handleGenerate} generateLabel="Generate Lego Track" generateDisabled={!caption.trim()}>
+      <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} showFileNote />
       <FieldLabel label="Backing Track (source audio)">
         <StudioFileInput onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
       </FieldLabel>

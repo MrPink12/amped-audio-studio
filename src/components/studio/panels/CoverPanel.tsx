@@ -2,14 +2,20 @@ import { useState } from "react";
 import PanelShell from "../shared/PanelShell";
 import FieldLabel from "../shared/FieldLabel";
 import { StudioTextarea, StudioNumberInput, StudioTextInput, StudioFileInput, StudioSlider } from "../shared/StudioInput";
+import StyleContextBar from "../shared/StyleContextBar";
+import type { StyleMode, StyleEngineOption } from "@/types/vunox";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface Props {
   engine: string;
   onGenerate: (caption: string, params: Record<string, unknown>) => void;
+  styleEngine: string;
+  styleMode: StyleMode;
+  styleInfluence: number;
+  styleEngineOptions: StyleEngineOption[];
 }
 
-const CoverPanel = ({ engine, onGenerate }: Props) => {
+const CoverPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   const [file, setFile] = useState<File | null>(null);
   const [style, setStyle] = useState("");
   const [strength, setStrength] = useState(50);
@@ -32,6 +38,7 @@ const CoverPanel = ({ engine, onGenerate }: Props) => {
 
   return (
     <PanelShell title="Cover" description="Style-transform existing audio while keeping structure." engine={engine} isLoading={isLoading} error={error} success={success} onGenerate={handleGenerate} generateLabel="Generate Cover" generateDisabled={!style.trim()}>
+      <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} showFileNote />
       <FieldLabel label="Source Audio (cover from)">
         <StudioFileInput onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
       </FieldLabel>

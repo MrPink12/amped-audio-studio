@@ -2,13 +2,19 @@ import { useState } from "react";
 import PanelShell from "../shared/PanelShell";
 import FieldLabel from "../shared/FieldLabel";
 import { StudioTextarea, StudioNumberInput, StudioFileInput } from "../shared/StudioInput";
+import StyleContextBar from "../shared/StyleContextBar";
+import type { StyleMode, StyleEngineOption } from "@/types/vunox";
 
 interface Props {
   engine: string;
   onGenerate: (caption: string, params: Record<string, unknown>) => void;
+  styleEngine: string;
+  styleMode: StyleMode;
+  styleInfluence: number;
+  styleEngineOptions: StyleEngineOption[];
 }
 
-const CompletePanel = ({ engine, onGenerate }: Props) => {
+const CompletePanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   const [file, setFile] = useState<File | null>(null);
   const [instructions, setInstructions] = useState("");
   const [caption, setCaption] = useState("");
@@ -27,6 +33,7 @@ const CompletePanel = ({ engine, onGenerate }: Props) => {
 
   return (
     <PanelShell title="Complete" description="Complete an incomplete track by adding missing instruments or sections." engine={engine} isLoading={isLoading} error={error} success={success} onGenerate={handleGenerate} generateLabel="Complete Track" generateDisabled={!instructions.trim()}>
+      <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} showFileNote />
       <FieldLabel label="Incomplete Track (source audio)">
         <StudioFileInput onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
       </FieldLabel>

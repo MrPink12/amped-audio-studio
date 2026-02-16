@@ -1,13 +1,19 @@
 import { useState } from "react";
 import FieldLabel from "../shared/FieldLabel";
 import { StudioTextarea, StudioSelect, StudioFileInput, StudioTextInput } from "../shared/StudioInput";
+import StyleContextBar from "../shared/StyleContextBar";
 import { VOCAL_LANGUAGES } from "@/types/vunox";
+import type { StyleMode, StyleEngineOption } from "@/types/vunox";
 import { Loader2, Sparkles, FileText, Ear } from "lucide-react";
 import type { ToolResult } from "@/types/vunox";
 
 interface Props {
   engine: string;
   onGenerate: (caption: string, params: Record<string, unknown>) => void;
+  styleEngine: string;
+  styleMode: StyleMode;
+  styleInfluence: number;
+  styleEngineOptions: StyleEngineOption[];
 }
 
 const ToolCard = ({
@@ -57,7 +63,7 @@ const ToolCard = ({
   </div>
 );
 
-const ToolsPanel = ({ engine, onGenerate }: Props) => {
+const ToolsPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   // Create Sample
   const [csIdea, setCsIdea] = useState("");
   const [csInstrumental, setCsInstrumental] = useState(false);
@@ -93,6 +99,8 @@ const ToolsPanel = ({ engine, onGenerate }: Props) => {
         <h2 className="font-display text-lg uppercase tracking-[0.15em] text-primary gold-text-glow mb-1">Tools</h2>
         <p className="text-[11px] font-body text-muted-foreground">Utility tools for sample creation, formatting, and audio analysis.</p>
       </div>
+
+      <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} />
 
       <div className="grid grid-cols-1 gap-5">
         {/* Create Sample */}
