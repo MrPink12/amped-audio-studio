@@ -1,4 +1,4 @@
-import { Music, Layers, Paintbrush, Puzzle, Scissors, PlusCircle, Wrench } from "lucide-react";
+import { Music, Layers, Paintbrush, Puzzle, Scissors, PlusCircle, Wrench, Palette } from "lucide-react";
 import type { SectionId } from "@/types/vunox";
 import { SECTIONS } from "@/types/vunox";
 
@@ -10,6 +10,7 @@ const ICONS: Record<SectionId, React.ElementType> = {
   extract: Scissors,
   complete: PlusCircle,
   tools: Wrench,
+  mystyle: Palette,
 };
 
 interface StudioNavProps {
@@ -27,10 +28,10 @@ const StudioNav = ({ active, onChange }: StudioNavProps) => (
     {SECTIONS.map((section) => {
       const Icon = ICONS[section.id];
       const isActive = active === section.id;
-      const isTools = section.id === "tools";
+      const hasDivider = section.id === "tools" || section.id === "mystyle";
       return (
         <div key={section.id}>
-          {isTools && <div className="h-px bg-border mx-3 my-2" />}
+          {hasDivider && <div className="h-px bg-border mx-3 my-2" />}
           <button
             onClick={() => onChange(section.id)}
             className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all duration-150

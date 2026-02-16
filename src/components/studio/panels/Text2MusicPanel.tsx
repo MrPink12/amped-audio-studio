@@ -2,15 +2,21 @@ import { useState } from "react";
 import PanelShell from "../shared/PanelShell";
 import FieldLabel from "../shared/FieldLabel";
 import { StudioTextarea, StudioNumberInput, StudioSelect } from "../shared/StudioInput";
+import StyleContextBar from "../shared/StyleContextBar";
 import { MUSICAL_KEYS, TIME_SIGNATURES, VOCAL_LANGUAGES } from "@/types/vunox";
+import type { StyleMode, StyleEngineOption } from "@/types/vunox";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface Props {
   engine: string;
   onGenerate: (caption: string, params: Record<string, unknown>) => void;
+  styleEngine: string;
+  styleMode: StyleMode;
+  styleInfluence: number;
+  styleEngineOptions: StyleEngineOption[];
 }
 
-const Text2MusicPanel = ({ engine, onGenerate }: Props) => {
+const Text2MusicPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   const [caption, setCaption] = useState("");
   const [lyrics, setLyrics] = useState("");
   const [duration, setDuration] = useState(30);
@@ -52,6 +58,7 @@ const Text2MusicPanel = ({ engine, onGenerate }: Props) => {
       generateLabel="Generate Text2Music"
       generateDisabled={!caption.trim()}
     >
+      <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} />
       <FieldLabel label="Caption / Prompt" required>
         <StudioTextarea
           value={caption}

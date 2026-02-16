@@ -2,13 +2,19 @@ import { useState } from "react";
 import PanelShell from "../shared/PanelShell";
 import FieldLabel from "../shared/FieldLabel";
 import { StudioTextarea, StudioNumberInput, StudioSelect, StudioFileInput } from "../shared/StudioInput";
+import StyleContextBar from "../shared/StyleContextBar";
+import type { StyleMode, StyleEngineOption } from "@/types/vunox";
 
 interface Props {
   engine: string;
   onGenerate: (caption: string, params: Record<string, unknown>) => void;
+  styleEngine: string;
+  styleMode: StyleMode;
+  styleInfluence: number;
+  styleEngineOptions: StyleEngineOption[];
 }
 
-const RepaintPanel = ({ engine, onGenerate }: Props) => {
+const RepaintPanel = ({ engine, onGenerate, styleEngine, styleMode, styleInfluence, styleEngineOptions }: Props) => {
   const [file, setFile] = useState<File | null>(null);
   const [start, setStart] = useState<string>("");
   const [end, setEnd] = useState<string>("");
@@ -28,6 +34,7 @@ const RepaintPanel = ({ engine, onGenerate }: Props) => {
 
   return (
     <PanelShell title="Repaint" description="Re-generate a time segment of an existing track." engine={engine} isLoading={isLoading} error={error} success={success} onGenerate={handleGenerate} generateLabel="Generate Repaint" generateDisabled={!caption.trim() || !start || !end}>
+      <StyleContextBar styleEngine={styleEngine} styleMode={styleMode} styleInfluence={styleInfluence} styleEngineOptions={styleEngineOptions} showFileNote />
       <FieldLabel label="Source Audio to Repaint">
         <StudioFileInput onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
       </FieldLabel>

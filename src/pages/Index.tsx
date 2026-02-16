@@ -8,6 +8,7 @@ import LegoPanel from "@/components/studio/panels/LegoPanel";
 import ExtractPanel from "@/components/studio/panels/ExtractPanel";
 import CompletePanel from "@/components/studio/panels/CompletePanel";
 import ToolsPanel from "@/components/studio/panels/ToolsPanel";
+import MyStylePanel from "@/components/studio/panels/MyStylePanel";
 import { useVunoxStore } from "@/hooks/useVunoxStore";
 import type { SectionId } from "@/types/vunox";
 
@@ -18,8 +19,15 @@ const Index = () => {
     store.addHistoryItem(taskType as any, caption, params);
   };
 
+  const styleCtx = {
+    styleEngine: store.styleEngine,
+    styleMode: store.styleMode,
+    styleInfluence: store.styleInfluence,
+    styleEngineOptions: store.styleEngineOptions,
+  };
+
   const renderPanel = (section: SectionId) => {
-    const props = { engine: store.engine, onGenerate: handleGenerate(section) };
+    const props = { engine: store.engine, onGenerate: handleGenerate(section), ...styleCtx };
     switch (section) {
       case "text2music": return <Text2MusicPanel {...props} />;
       case "cover": return <CoverPanel {...props} />;
@@ -28,12 +36,37 @@ const Index = () => {
       case "extract": return <ExtractPanel {...props} />;
       case "complete": return <CompletePanel {...props} />;
       case "tools": return <ToolsPanel {...props} />;
+      case "mystyle":
+        return (
+          <MyStylePanel
+            boards={store.boards}
+            styleModels={store.styleModels}
+            addBoard={store.addBoard}
+            deleteBoard={store.deleteBoard}
+            addTrackToBoard={store.addTrackToBoard}
+            removeTrackFromBoard={store.removeTrackFromBoard}
+            updateTrackNotes={store.updateTrackNotes}
+            createStyleModel={store.createStyleModel}
+            toggleStyleModelFavorite={store.toggleStyleModelFavorite}
+          />
+        );
     }
   };
 
   return (
     <div className="h-screen flex flex-col bg-background metal-surface">
-      <StudioHeader engine={store.engine} setEngine={store.setEngine} isOnline={store.isOnline} />
+      <StudioHeader
+        engine={store.engine}
+        setEngine={store.setEngine}
+        isOnline={store.isOnline}
+        styleEngine={store.styleEngine}
+        setStyleEngine={store.setStyleEngine}
+        styleMode={store.styleMode}
+        setStyleMode={store.setStyleMode}
+        styleInfluence={store.styleInfluence}
+        setStyleInfluence={store.setStyleInfluence}
+        styleEngineOptions={store.styleEngineOptions}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <StudioNav active={store.activeSection} onChange={store.setActiveSection} />
