@@ -90,26 +90,33 @@ export const StudioSlider = ({
   onChange,
   min = 0,
   max = 100,
+  step = 1,
+  suffix = "%",
+  width,
 }: {
   label?: string;
   value: number;
   onChange: (v: number) => void;
   min?: number;
   max?: number;
+  step?: number;
+  suffix?: string;
+  width?: string;
 }) => (
   <div className="flex items-center gap-3">
     <input
       type="range"
       min={min}
       max={max}
+      step={step}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
       className="flex-1 h-1.5 bg-border rounded-full appearance-none cursor-pointer
         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5
         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md"
     />
-    <span className="text-[11px] font-mono text-primary tabular-nums w-10 text-right">
-      {value}%
+    <span className={`text-[11px] font-mono text-primary tabular-nums text-right ${width ?? "w-10"}`}>
+      {step < 1 ? value.toFixed(step < 0.1 ? 2 : 1) : value}{suffix}
     </span>
   </div>
 );

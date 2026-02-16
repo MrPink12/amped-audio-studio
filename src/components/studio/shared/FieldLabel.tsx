@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 interface FieldLabelProps {
-  label: string;
+  label: ReactNode;
   required?: boolean;
   children: ReactNode;
 }
